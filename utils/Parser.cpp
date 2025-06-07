@@ -37,6 +37,8 @@ std::vector<DataTypeInfo> DataLoader::parseTypes(const std::string& typeLine) {
     return types;
 }
 
+
+
 std::vector<Registro> DataLoader::loadFromFile(const std::string& filename, DatabaseManager& dbManager) {
     std::ifstream file(filename);
     std::string line;
@@ -54,9 +56,7 @@ std::vector<Registro> DataLoader::loadFromFile(const std::string& filename, Data
         while (std::getline(file, line)) {
             std::istringstream iss(line);
             Registro registro;
-            //registro.atributos.resize(types.size()); aqui es para establecer el tamaño del vector de atributos pero no lo veo necesario
-            cout<<"Numero de atributos: "<<types.size()<<endl;
-            
+            cout<<"Numero de atributos: "<<types.size()<<endl;            
             for (size_t i = 0; i < types.size(); ++i) {
                 std::string value;
                 if (!(iss >> value)) {

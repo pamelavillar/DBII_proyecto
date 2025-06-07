@@ -20,6 +20,7 @@ public:
 private:
     Disco disco;
     std::vector<std::pair<DireccionDisco, Registro>> recordLocations;// estructura temporal
+    std::vector<string> nombres_atributos;
     void printRecordLocation(const Registro& registro, const DireccionDisco& address) const;
 };
 
