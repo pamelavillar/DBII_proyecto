@@ -50,15 +50,14 @@ int compareDataValue(const DataValue& a, const DataValue& b) {
     };
 // Nodo del AVL
 struct AVLNode {
-    vector<Dato> datos;
+    Dato datos;
     AVLNode* left;
     AVLNode* right;
     int height;
 
-    AVLNode(const DataValue& val, int ind, int id, int n_attr) {
-        datos.resize(n_attr);
-        datos[ind] = Dato(val);
-        datos[ind].ids.push_back(id);
+    AVLNode(const DataValue& val, int id) {
+        datos = Dato(val);
+        datos.ids.push_back(id);
         left = nullptr;
         right = nullptr;
         height = 1;
@@ -72,16 +71,16 @@ private:
     vector<AVLNode**> path;
 
 public:
-    void insert(const DataValue& val, int indice, int id, int n_attr) {
+    void insert(const DataValue& val, int id) {
         path.clear();
         AVLNode** pos;
 
-        if (!find(pos, val, indice)) {
+        if (!find(pos, val)) {
             if (*pos == nullptr) {
-                *pos = new AVLNode(val, indice, id, n_attr);
+                *pos = new AVLNode(val, id);
             } else {
-                (*pos)->datos[indice].valor = val;
-                (*pos)->datos[indice].ids.push_back(id);
+                (*pos)->datos.valor = val;
+                (*pos)->datos.ids.push_back(id);
             }
             for (int i = path.size() - 1; i >= 0; i--) {
                 AVLNode** current = path[i];
@@ -90,19 +89,15 @@ public:
             }
             
         } else {
-            (*pos)->datos[indice].ids.push_back(id);
+            (*pos)->datos.ids.push_back(id);
         }
     }
 
-    bool find(AVLNode**& pos, const DataValue& val, int ind) {
+    bool find(AVLNode**& pos, const DataValue& val) {
         pos = &root;
         while (*pos) {
-            if ((*pos)->datos[ind].ids.empty()) {
-                return false;
-            }
-
             path.push_back(pos);
-            int cmp = compareDataValue((*pos)->datos[ind].valor, val);
+            int cmp = compareDataValue((*pos)->datos.valor, val);
             if (cmp == 0) return true;
             else if (cmp < 0)
                 pos = &((*pos)->right);
@@ -113,10 +108,10 @@ public:
     }
 
 
-    vector<int> find_atributo(const DataValue& val, int ind) {
+    vector<int> find_atributo(const DataValue& val) {
         AVLNode** pos;
-        if (find(pos, val, ind)) {
-            return (*pos)->datos[ind].ids;
+        if (find(pos, val)) {
+            return (*pos)->datos.ids;
         } else {
             return {}; // retornar vector vacío si no se encuentra
         }
@@ -132,43 +127,14 @@ public:
         if (n == nullptr) return;
 
         inorder(n->left);
-
-        cout << "[";
-        for (size_t i = 0; i < n->datos.size(); ++i) {
-            std::visit([](auto&& val) {
-                cout << val;
-            }, n->datos[i].valor);
-
-            if (i != n->datos.size() - 1) {
-                cout << ", ";
-            }
-        }
-        cout << "]\n";
+        std::visit([](auto&& val) {
+                        cout << val;
+                    }, n->datos.valor);
+                cout << "\n";
 
         inorder(n->right);
     }
 
-    void inorder2(AVLNode* n) {
-        if (n == nullptr) return;
-
-        inorder2(n->left);
-
-        cout << "[";
-        for (size_t i = 0; i < n->datos.size(); ++i) {
-            if (!n->datos[i].ids.empty()) {
-                cout << "Campo " << i << ": ";
-                visit([](auto&& val) { cout << val; }, n->datos[i].valor);
-                cout << " (IDs: ";
-                for (int id : n->datos[i].ids) cout << id << " ";
-                cout << ")";
-            }
-            if (i != n->datos.size() - 1) cout << ", ";
-        }
-        cout << "]\n";
-
-
-        inorder2(n->right);
-    }
 
     
 
@@ -204,15 +170,10 @@ public:
                 q.pop();
 
                 if (current) {
-                    cout << "[";
-                    for (size_t j = 0; j < current->datos.size(); ++j) {
-                        std::visit([](auto&& val) {
+                    std::visit([](auto&& val) {
                             cout << val;
-                        }, current->datos[j].valor);
-                        if (j != current->datos.size() - 1)
-                            cout << ", ";
-                    }
-                    cout << "] ";
+                        }, current->datos.valor);
+
                     q.push(current->left);
                     q.push(current->right);
                 } else {
@@ -367,54 +328,59 @@ std::vector<DataValue> parseRecord(const std::string& recordLine,
 }
 
 int main() {
-    AVLTree tree;
+    AVLTree tree_edad;
+    AVLTree tree_promedio;
+    AVLTree tree_nombre;
 
     // Insertar 20+ registros con diferentes tipos de datos
     // Enteros (edad)
-    tree.insert(25, 0, 101,3);    // ID 101, edad 25
-    tree.insert(30, 0, 102,3);
-    tree.insert(20, 0, 103,3);
-    tree.insert(35, 0, 104,3);
-    tree.insert(18, 0, 105,3);
-    tree.insert(30, 0, 106,3);
-    tree.insert(30, 0, 107,3);
-    tree.insert(30, 0, 108,3);
-    tree.insert(33, 0, 109,3);
-    tree.insert(30, 0, 110,3);
+    tree_edad.insert(25, 101);    // ID 101, edad 25
+    tree_edad.insert(30,102);
+    tree_edad.insert(20, 103);
+    tree_edad.insert(35, 104);
+    tree_edad.insert(18, 105);
+    tree_edad.insert(30, 106);
+    tree_edad.insert(30, 107);
+    tree_edad.insert(30, 108);
+    tree_edad.insert(33, 109);
+    tree_edad.insert(30, 110);
 
     // Flotantes (promedio)
-    tree.insert(15.5f, 1, 201,3); // ID 201, promedio 15.5
-    tree.insert(17.3f, 1, 202,3);
-    tree.insert(14.2f, 1, 203,3);
-    tree.insert(16.8f, 1, 204,3);
-    tree.insert(18.0f, 1, 205,3);
-    tree.insert(13.7f, 1, 206,3);
-    tree.insert(17.3f, 1, 207,3);
-    tree.insert(15.0f, 1, 208,3);
-    tree.insert(17.3f, 1, 209,3);
-    tree.insert(17.3f, 1, 210,3);
+    tree_promedio.insert(15.5f, 201); // ID 201, promedio 15.5
+    tree_promedio.insert(17.3f,  202);
+    tree_promedio.insert(14.2f,  203);
+    tree_promedio.insert(16.8f,  204);
+    tree_promedio.insert(18.0f,  205);
+    tree_promedio.insert(13.7f,  206);
+    tree_promedio.insert(17.3f,  207);
+    tree_promedio.insert(15.0f,  208);
+    tree_promedio.insert(17.3f,  209);
+    tree_promedio.insert(17.3f,  210);
 
     // Strings (nombre)
-    tree.insert("Carlos", 2, 301,3); // ID 301, nombre Carlos
-    tree.insert("Ana", 2, 302,3);
-    tree.insert("Luis", 2, 303,3);
-    tree.insert("Maria", 2, 304,3);
-    tree.insert("Carlos", 2, 305,3);
-    tree.insert("Sofia", 2, 306,3);
-    tree.insert("Juan", 2, 307,3);
-    tree.insert("Carlos", 2, 308,3);
-    tree.insert("Diego", 2, 309,3);
-    tree.insert("Elena", 2, 310,3);
+    tree_nombre.insert("Carlos", 301); // ID 301, nombre Carlos
+    tree_nombre.insert("Ana",  302);
+    tree_nombre.insert("Luis",  303);
+    tree_nombre.insert("Maria",  304);
+    tree_nombre.insert("Carlos",  305);
+    tree_nombre.insert("Sofia", 306);
+    tree_nombre.insert("Juan",  307);
+    tree_nombre.insert("Carlos",  308);
+    tree_nombre.insert("Diego", 309);
+    tree_nombre.insert("Elena", 310);
 
     // Mostrar árbol
     cout << "=====================================\n";
     cout << "Recorrido inorder del AVL (ordenado):\n";
-    tree.inorder(tree.Root());
+    tree_edad.inorder(tree_edad.Root());
+    tree_promedio.inorder(tree_promedio.Root());
+    tree_nombre.inorder(tree_nombre.Root());
     cout << "\n=====================================\n";
-    cout << "Recorrido inorder del AVL (ordenado):\n";
-    tree.inorder2(tree.Root());
+
     cout << "\n=====================================\n";
-    tree.printByLevel();
+    tree_edad.printByLevel();
+    tree_promedio.printByLevel();
+    tree_nombre.printByLevel();
     cout << "\n=====================================\n";
 
 
@@ -423,32 +389,32 @@ int main() {
     
     // Buscar edades
     cout << "IDs con edad 30: ";
-    auto res_edad = tree.find_atributo(30, 0);
+    auto res_edad = tree_edad.find_atributo(30);
     for (int id : res_edad) cout << id << " ";
     
 
 
     // Buscar promedios
     cout << "\nIDs con promedio 17.3: ";
-    auto res_prom = tree.find_atributo(17.3f, 1);
+    auto res_prom = tree_promedio.find_atributo(17.3f);
     for (int id : res_prom) cout << id << " ";
 
 
 
     // Buscar nombres
     cout << "\nIDs con nombre 'Carlos': ";
-    auto res_nombre = tree.find_atributo("Carlos", 2);
+    auto res_nombre = tree_nombre.find_atributo("Carlos");
     for (int id : res_nombre) cout << id << " ";
 
 
     // Casos especiales
     cout << "\n--- Casos especiales ---\n";
     cout << "Buscar edad inexistente (50): ";
-    auto res_vacio = tree.find_atributo(50, 0);
+    auto res_vacio = tree_edad.find_atributo(50);
     if (res_vacio.empty()) cout << "No encontrado";
 
     cout << "\nBuscar nombre vacio (''): ";
-    auto res_vacio_str = tree.find_atributo("", 2);
+    auto res_vacio_str = tree_nombre.find_atributo("");
     if (res_vacio_str.empty()) cout << "No encontrado";
 
     cout << "\n=====================================\n";
