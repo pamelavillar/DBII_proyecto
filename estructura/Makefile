@@ -1,6 +1,6 @@
 CC = /usr/bin/clang++
 CFLAGS = -std=c++17 -stdlib=libc++ -g
-SRCS = EstructuraBusqueda.cpp
+SRCS = Buscador.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = ej1
 
