@@ -2,49 +2,50 @@
 #include <string>
 using namespace std;
 class CNode{
-    public:
-        size_t id;
-        int height;
-        CNode* node[2];
-        vector<string> registro;
-        long int byte_inicial;
-        long int byte_fin;
-        vector<pair<long int, long int>> particion_dirs;
-        CNode(size_t _id, vector<string> reg, long int dir, long int dir2, vector<pair<long int, long int>> p_dir){
-            node[0] = nullptr;
-            node[1] = nullptr;
-            registro = reg;
-            byte_inicial = dir;
-            byte_fin = dir2;
-            particion_dirs = p_dir;
-            id = stoi(reg[0]);
-        }
-
+public:
+    unsigned int id;
+    int height;
+    CNode* node[2];
+    vector<string> registro;
+    long int byte_inicial;
+    long int byte_fin;
+    vector<pair<long int, long int>> particion_dirs;
+    CNode(vector<string> reg, long int dir, long int dir2, vector<pair<long int, long int>> p_dir){
+        node[0] = nullptr;
+        node[1] = nullptr;
+        registro = reg;
+        byte_inicial = dir;
+        byte_fin = dir2;
+        particion_dirs = p_dir;
+        id = stoi(reg[0]);
+    }
 };
 
-class AVLTree {
+class AVL_ID {
 public:
     CNode* root;
     vector<CNode**> path;
-    AVLTree() {
+    //vector<string> atributos;
+    AVL_ID(){//vector<string> _atributos) {
         root = nullptr;
+        //atributos = atributos;
     }
-    bool insert(size_t _id, vector<string> reg, long int dir, long int dir2, vector<pair<long int, long int>> p_dir);
+    bool insert(vector<string> reg, long int dir = 0, long int dir2 = 0, vector<pair<long int, long int>> p_dir = {{0,0}});
     bool evaluando(CNode** current);
     CNode** rep(CNode** p);
     void inorder(CNode* p);
     CNode* Root();
 
-    bool find(CNode**& p, int v);
+    bool find(CNode**& p, unsigned int v);
     int height(CNode* p);
     int factor_balance(CNode* p);
     void rotaRight(CNode** p);
     void rotaLeft(CNode** p);
 };
-CNode* AVLTree::Root() {
+CNode* AVL_ID::Root() {
     return root;
 }
-void AVLTree::inorder(CNode* n) {
+void AVL_ID::inorder(CNode* n) {
     if (n == nullptr) return;
 
     inorder(n->node[0]);//paso 1: elemento del lado izquierdo 
@@ -52,7 +53,7 @@ void AVLTree::inorder(CNode* n) {
     inorder(n->node[1]); //paso 3: elemento del lado derecho
 }
 
-bool AVLTree::find(CNode**& p, int v) {
+bool AVL_ID::find(CNode**& p, unsigned int v) {
     p = &root;
     path.clear();
     while (*p && (*p)->id != v) {
@@ -63,7 +64,7 @@ bool AVLTree::find(CNode**& p, int v) {
 }
 
 
-void AVLTree::rotaRight(CNode** p) {
+void AVL_ID::rotaRight(CNode** p) {
     CNode* C = (*p);
     CNode* B = C->node[0];
     CNode* A = B->node[0];
@@ -78,7 +79,7 @@ void AVLTree::rotaRight(CNode** p) {
     height(B);
 }
 
-void AVLTree::rotaLeft(CNode** p) {
+void AVL_ID::rotaLeft(CNode** p) {
     CNode* A = (*p);
     CNode* B = A->node[1];
     CNode* C = B->node[1];
@@ -93,7 +94,7 @@ void AVLTree::rotaLeft(CNode** p) {
     height(B);
 }
 
-bool AVLTree::evaluando(CNode** current){
+bool AVL_ID::evaluando(CNode** current){
     
     int balance = factor_balance(*current);
 
@@ -125,21 +126,25 @@ bool AVLTree::evaluando(CNode** current){
     }
     return false;
 }
-bool AVLTree::insert(size_t _id, vector<string> reg, long int dir, long int dir2, vector<pair<long int, long int>> p_dir) {
+
+bool AVL_ID::insert(vector<string> reg, long int dir, long int dir2 , vector<pair<long int, long int>> p_dir) {
     path.clear();
     CNode** pos;
-    if (find(pos, _id)) return false;
-    *pos = new CNode(_id, reg, dir, dir2, p_dir);
+    if (reg.empty()) return false;
+    if (find(pos, stoi(reg[0]))) return false;
+    *pos = new CNode(reg, dir, dir2, p_dir);
 
     for (int i = path.size() - 1; i >= 0; i--) {
         CNode** current = path[i];
         height(*current);
         if(evaluando(current)) break;
     }
+    //insertar aqui? xd
+
     return true;
 }
 
-int  AVLTree::height(CNode* p) {
+int  AVL_ID::height(CNode* p) {
     if (!p) return 0;
     int l, r;
     l = height(p->node[0]);
@@ -149,7 +154,7 @@ int  AVLTree::height(CNode* p) {
     return  p->height;
 }
 
-int AVLTree::factor_balance(CNode* p) {
+int AVL_ID::factor_balance(CNode* p) {
     if (!p) return false;
 
     int leftHeight = p->node[0] ? p->node[0]->height : 0;
