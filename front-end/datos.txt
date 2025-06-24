@@ -1,0 +1,11 @@
+Nombre:VARCHAR:20,Edad:INT:3,Promedio:FLOAT:4,Ciudad:VARCHAR:20,Genero:VARCHAR:1,Activo:INT:1,Nivel:VARCHAR:10
+Maria,20,15.3,Arequipa,F,1,Intermedio
+Jose,22,14.7,Lima,M,1,Avanzado
+Lucia,19,17.1,Cusco,F,0,Basico
+Pedro,25,16.4,Lima,M,1,Avanzado
+Elena,18,13.9,Arequipa,F,1,Basico
+Carlos,21,14.2,Trujillo,M,0,Intermedio
+Ana,23,16.8,Lima,F,1,Avanzado
+Luis,20,15.0,Arequipa,M,1,Basico
+Noemi,24,17.3,Cusco,F,1,Avanzado
+Rosa,22,14.5,Lima,F,0,Intermedio
