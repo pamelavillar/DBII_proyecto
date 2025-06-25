@@ -98,6 +98,8 @@ public:
         tipos = _tipos;
     }
     vector<unsigned int> buscar(const string& campoNombre, const string& valor);
+    // Búsqueda por rango
+    vector<unsigned int> buscarRango(const string& campo, const string& operador, const string& valor);
 };
 NodoAVL* AVL_Busqueda::rotarDerecha(NodoAVL* y) {
     NodoAVL* x = y->izquierdo;
@@ -220,3 +222,50 @@ void AVL_Busqueda::inorder(NodoAVL* nodo) {
     inorder(nodo->derecho);
 }
 
+
+vector<unsigned int> AVL_Busqueda::buscarRango(const string& campo, const string& operador, const string& valor) {
+    vector<unsigned int> res;
+    int campoIndex = -1;
+    for (int i = 0; i < campos.size(); ++i) {
+        if (campos[i] == campo) {
+            campoIndex = i;
+            break;
+        }
+    }
+    if (campoIndex == -1) return res;
+
+    function<void(NodoAVL*)> recorrer = [&](NodoAVL* nodo) {
+        if (!nodo) return;
+        if (nodo->clave.campo != campoIndex) {
+            recorrer(nodo->izquierdo);
+            recorrer(nodo->derecho);
+            return;
+        }
+
+        bool cumple = false;
+        if (nodo->clave.tipo == TIPO_ENTERO) {
+            int cmp = nodo->clave.valorEntero;
+            int v = stoi(valor);
+            cumple = (operador == "<" && cmp < v) ||
+                     (operador == ">" && cmp > v) ||
+                     (operador == "<=" && cmp <= v) ||
+                     (operador == ">=" && cmp >= v);
+        } else if (nodo->clave.tipo == TIPO_FLOTANTE) {
+            float cmp = nodo->clave.valorFloat;
+            float v = stof(valor);
+            cumple = (operador == "<" && cmp < v) ||
+                     (operador == ">" && cmp > v) ||
+                     (operador == "<=" && cmp <= v) ||
+                     (operador == ">=" && cmp >= v);
+        }
+
+        if (cumple)
+            res.insert(res.end(), nodo->ids.begin(), nodo->ids.end());
+
+        recorrer(nodo->izquierdo);
+        recorrer(nodo->derecho);
+    };
+
+    recorrer(root);
+    return res;
+}

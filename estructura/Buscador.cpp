@@ -11,6 +11,11 @@ enum Operador {
     AND,
     OR
 };
+enum Orden {
+    NO,
+    ASC,
+    DES
+};
 
 class Buscador {
 private:
@@ -19,7 +24,7 @@ private:
     vector<unsigned int> combinarVec(vector<unsigned int> final, vector<unsigned int> parcial, Operador op);
 public:
     Buscador(vector<string>& _campos, vector<string>& _tipoDato, vector<vector<string>>& registros);
-    bool busquedaCompleta(vector<string>& camposBuscados, vector<string>& valoresBuscados, Operador ope);
+    vector<vector<string>> busquedaCompleta(vector<string>& camposBuscados, vector<string>& valoresBuscados, vector<string>& camposEsperados, Operador ope, string& orden, Orden dirOrden);
     void print();
 
 };
@@ -99,49 +104,102 @@ vector<unsigned int> Buscador::combinarVec(vector<unsigned int> final, vector<un
     return resultado;
 }
 
-bool Buscador::busquedaCompleta(vector<string>& camposBuscados, vector<string>& valoresBuscados, Operador ope) {
-    if (camposBuscados.size() != valoresBuscados.size()) return false;
+vector<vector<string>> Buscador::busquedaCompleta(vector<string>& camposBuscados, vector<string>& valoresBuscados, vector<string>& camposEsperados, Operador ope, string& orden, Orden dirOrden) {
+    vector<vector<string>> resu;
+    if (camposBuscados.size() != valoresBuscados.size()) return {{"ERROR"}};
     vector<unsigned int> idFinal;
+
     for (int i = 0; i < camposBuscados.size(); i++) {
-        cout << "\nBuscando IDs donde " << camposBuscados[i] << " == " << valoresBuscados[i] << endl;
         vector<unsigned int> ids;
-        if (camposBuscados[i] == "id") {
-            unsigned long raw_id = stoul(valoresBuscados[i]);
-            if (raw_id <= numeric_limits<unsigned int>::max()) {
-                unsigned int id = static_cast<unsigned int>(raw_id);
-                CNode** nodoPtr;
-                if (arbol_id.find(nodoPtr, id))
-                    ids.push_back(id);
-            }
+        string campo = camposBuscados[i];
+        string valor = valoresBuscados[i];
+
+        if (campo == "id") {
+            try {
+                unsigned long raw_id = stoul(valor);
+                if (raw_id <= numeric_limits<unsigned int>::max()) {
+                    unsigned int id = static_cast<unsigned int>(raw_id);
+                    CNode** nodoPtr;
+                    if (arbol_id.find(nodoPtr, id))
+                        ids.push_back(id);
+                }
+            } catch (...) { return {{"ERROR"}}; }
         } else {
-            ids = arbol_busqueda.buscar(camposBuscados[i], valoresBuscados[i]);
+            auto itTipo = find(arbol_busqueda.campos.begin(), arbol_busqueda.campos.end(), campo);
+            if (itTipo == arbol_busqueda.campos.end()) return {{"ERROR"}};
+            int idxTipo = itTipo - arbol_busqueda.campos.begin();
+            string tipo = arbol_busqueda.tipos[idxTipo];
+
+            if (valor.find("..") != string::npos) {
+                size_t pos = valor.find("..");
+                string valMin = valor.substr(0, pos);
+                string valMax = valor.substr(pos + 2);
+                vector<unsigned int> idsMin = arbol_busqueda.buscarRango(campo, ">=", valMin);
+                vector<unsigned int> idsMax = arbol_busqueda.buscarRango(campo, "<=", valMax);
+                ids = combinarVec(idsMin, idsMax, AND);
+            } else {
+                string operador = "=";
+                if ((valor[0] == '<' || valor[0] == '>') && valor[1] == '=') {
+                    operador = valor.substr(0, 2);
+                    valor = valor.substr(2);
+                } else if (valor[0] == '<' || valor[0] == '>') {
+                    operador = valor.substr(0, 1);
+                    valor = valor.substr(1);
+                }
+
+                if (operador == "=") {
+                    ids = arbol_busqueda.buscar(campo, valor);
+                } else {
+                    ids = arbol_busqueda.buscarRango(campo, operador, valor);
+                }
+            }
         }
 
         if (i == 0) idFinal = ids;
         else idFinal = combinarVec(idFinal, ids, ope);
     }
 
-    cout << "\n-----------------------\n";
-    if(idFinal.size()<1) cout << "No hay registros con los parametros especificados :(\n";
-    //else {
-        cout << "Registros encontrados:\n";
-        for (unsigned int id : idFinal) {
-            CNode** nodoPtr;
-            if (arbol_id.find(nodoPtr, id)) {
-                const vector<string>& reg = (*nodoPtr)->registro;
-                for (int k = 0; k < reg.size(); ++k) {
-                    cout << arbol_busqueda.campos[k] << ": " << reg[k];
-                    if (k != reg.size() - 1) cout << " | ";
+    if (idFinal.empty()) return {{"VACIO"}};
+
+    for (unsigned int id : idFinal) {
+        CNode** nodoPtr;
+        if (arbol_id.find(nodoPtr, id)) {
+            const vector<string>& reg = (*nodoPtr)->registro;
+            vector<string> temp;
+            for (int k = 0; k < camposEsperados.size(); ++k) {
+                auto it = find(arbol_busqueda.campos.begin(), arbol_busqueda.campos.end(), camposEsperados[k]);
+                if (it != arbol_busqueda.campos.end()) {
+                    int idx = it - arbol_busqueda.campos.begin();
+                    temp.push_back(reg[idx]);
                 }
-                cout << endl;
-            } else {
-                cout << "ID " << id << " no encontrado en arbol_id! :(\n";
-                return false;
             }
+            resu.push_back(temp);
         }
-    //}
-    
-    return true;
+    }
+
+    auto it = find(camposEsperados.begin(), camposEsperados.end(), orden);
+    if (it != camposEsperados.end()) {
+        int idxOrden = it - camposEsperados.begin();
+        auto itTipo = find(arbol_busqueda.campos.begin(), arbol_busqueda.campos.end(), orden);
+        int idxTipo = itTipo - arbol_busqueda.campos.begin();
+        string tipoOrden = arbol_busqueda.tipos[idxTipo];
+
+        if (tipoOrden == "int") {
+            sort(resu.begin(), resu.end(), [=](const vector<string>& a, const vector<string>& b) {
+                return dirOrden == ASC ? stoi(a[idxOrden]) < stoi(b[idxOrden]) : stoi(a[idxOrden]) > stoi(b[idxOrden]);
+            });
+        } else if (tipoOrden == "float") {
+            sort(resu.begin(), resu.end(), [=](const vector<string>& a, const vector<string>& b) {
+                return dirOrden == ASC ? stof(a[idxOrden]) < stof(b[idxOrden]) : stof(a[idxOrden]) > stof(b[idxOrden]);
+            });
+        } else {
+            sort(resu.begin(), resu.end(), [=](const vector<string>& a, const vector<string>& b) {
+                return dirOrden == ASC ? a[idxOrden] < b[idxOrden] : a[idxOrden] > b[idxOrden];
+            });
+        }
+    }
+
+    return resu;
 }
 
 void Buscador::print(){
@@ -184,7 +242,17 @@ int main() {
         {"27", "Carlos", "25", "85296374", "1.79", "15.1"},
         {"28", "Juana", "26", "95125874", "1.62", "18.7"},
         {"29", "Maria", "27", "45698732", "1.60", "16.5"},
-        {"30", "Carlos", "28", "78912378", "1.75", "15.0"}
+        {"30", "Carlos", "28", "78912378", "1.75", "15.0"},
+        {"31", "Juana", "19", "95175384", "1.62", "18.8"},
+        {"32", "Maria", "30", "35715926", "1.60", "16.9"},
+        {"33", "Hector", "31", "25896314", "1.85", "19.3"},
+        {"34", "Carlos", "32", "14785236", "1.78", "17.5"},
+        {"35", "Ivan", "13", "36925874", "1.72", "16.8"},
+        {"36", "Carlos", "34", "74196385", "1.75", "15.6"},
+        {"37", "Sofia", "15", "85274196", "1.70", "18.1"},
+        {"38", "Carlos", "16", "96325874", "1.74", "15.2"},
+        {"39", "Juana", "37", "15975326", "1.62", "18.5"},
+        {"40", "Maria", "18", "75315984", "1.60", "16.7"}
     };
     try {
         //creacion
@@ -193,17 +261,32 @@ int main() {
         //impresion
         buscador.print();
         //ejemplo de busquedaa
-        vector<string> campos_bus = {"id", "nombre"};
-        vector<string> valores_bus = {"20", "Ivan"};
-        if (!buscador.busquedaCompleta(campos_bus, valores_bus, AND)) {//especificar operador OR o AND xd
-            cout << "Error en la busqueda" << endl;
-            return 1;
-        } else cout << "\nBUSQUEDA REALIZADA EXITOSAMENTE\n" << endl;
+        vector<string> campos_bus = { "edad"};
+        vector<string> valores_bus = {"16..20"}; // soporte de operadores: <  >  <=  >= ..
+        vector<string> valores_esp = {"nombre", "edad","promedio"}; //ingresar en orden correcto
+        string ord = "edad"; //en base a q se ordena
+
+        vector<vector<string>> resuConsulta = buscador.busquedaCompleta(campos_bus, valores_bus, valores_esp, AND, ord, ASC);//especificar operador OR o AND - especificar ASC, DES, NO
+
+        if (resuConsulta.size() == 1 && resuConsulta[0][0] == "ERROR") {
+            cout << "Error en la consulta.\n";
+        } else if (resuConsulta.size() == 1 && resuConsulta[0][0] == "VACIO") {
+            cout << "No se encontraron resultados.\n";
+        } else {
+            cout << "--------------------------------------------------\nResultados encontrados: " << resuConsulta.size() << "\n";
+            for (const auto& fila : resuConsulta) {
+                for (int i = 0; i < fila.size(); ++i) {
+                    cout << fila[i];
+                    if (i != fila.size() - 1) cout << " | ";
+                }
+                cout << '\n';
+            }
+            cout << '\n';
+        }
 
     } catch (const exception& e) {
         cerr << "Error al crear Buscador: " << e.what();
     }
     
-
     return 0;
 }
