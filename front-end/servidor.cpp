@@ -1,15 +1,15 @@
 #include "httplib.h"
 #include "json.hpp"
 #include "procesador_filtro.hpp" 
-#include "../DatabaseManager.h" // tu clase que implementa buscar(), constructor, etc.
+#include "../DatabaseManager.h" /
 #include <iostream>
 #include <vector>
-#include <memory> // para usar std::unique_ptr si quieres
+#include <memory> 
 
 using namespace std;
 using json = nlohmann::json;
 
-// Creamos un puntero global al manager (puedes usar raw o smart pointer)
+// Creamos un puntero global al manager 
 DatabaseManager* dbmanager = nullptr;
 
 int main() {
