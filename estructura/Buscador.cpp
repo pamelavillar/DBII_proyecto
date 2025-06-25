@@ -155,8 +155,13 @@ vector<vector<string>> Buscador::busquedaCompleta(vector<string>& camposBuscados
             }
         }
 
-        if (i == 0) idFinal = ids;
-        else idFinal = combinarVec(idFinal, ids, ope);
+        if (i == 0) {
+            idFinal = ids;
+        } else {
+            sort(idFinal.begin(), idFinal.end());
+            sort(ids.begin(), ids.end());
+            idFinal = combinarVec(idFinal, ids, ope);
+        }
     }
 
     if (idFinal.empty()) return {{"VACIO"}};
@@ -226,17 +231,17 @@ int main() {
         {"11", "Andres", "24", "35795148", "1.78", "19.5"},
         {"12", "Julia", "25", "15975326", "1.65", "17.2"},
         {"13", "Carlos", "20", "75315984", "1.75", "15.5"},
-        {"14", "Juana", "23", "95135762", "1.62", "18.0"},
+        {"14", "Rodrigo", "23", "95135762", "1.62", "18.0"},
         {"15", "Maria", "19", "35745612", "1.60", "16.8"},
         {"16", "Hector", "22", "45632178", "1.85", "19.0"},
         {"17", "Carlos", "21", "74185296", "1.78", "17.4"},
         {"18", "Ivan", "20", "96325874", "1.72", "16.7"},
-        {"19", "Carlos", "22", "85274196", "1.75", "15.8"},
+        {"19", "Carolina", "22", "85274196", "1.75", "15.8"},
         {"20", "Sofia", "20", "74196385", "1.70", "17.9"},
         {"21", "Carlos", "19", "32178965", "1.74", "15.0"},
         {"22", "Juana", "20", "78912345", "1.62", "18.4"},
         {"23", "Maria", "21", "96314725", "1.60", "16.6"},
-        {"24", "Carlos", "22", "75325841", "1.76", "15.3"},
+        {"24", "Pamela", "17", "75325841", "1.76", "19.3"},
         {"25", "Lucia", "23", "78945612", "1.70", "18.2"},
         {"26", "Pedro", "24", "32165487", "1.82", "19.2"},
         {"27", "Carlos", "25", "85296374", "1.79", "15.1"},
@@ -250,7 +255,7 @@ int main() {
         {"35", "Ivan", "13", "36925874", "1.72", "16.8"},
         {"36", "Carlos", "34", "74196385", "1.75", "15.6"},
         {"37", "Sofia", "15", "85274196", "1.70", "18.1"},
-        {"38", "Carlos", "16", "96325874", "1.74", "15.2"},
+        {"38", "Carla", "16", "96325874", "1.74", "15.2"},
         {"39", "Juana", "37", "15975326", "1.62", "18.5"},
         {"40", "Maria", "18", "75315984", "1.60", "16.7"}
     };
@@ -261,8 +266,8 @@ int main() {
         //impresion
         buscador.print();
         //ejemplo de busquedaa
-        vector<string> campos_bus = { "edad"};
-        vector<string> valores_bus = {"16..20"}; // soporte de operadores: <  >  <=  >= ..
+        vector<string> campos_bus = {"edad","promedio"};
+        vector<string> valores_bus = {">=17",">19"}; // soporte de operadores: <  >  <=  >= ..
         vector<string> valores_esp = {"nombre", "edad","promedio"}; //ingresar en orden correcto
         string ord = "edad"; //en base a q se ordena
 

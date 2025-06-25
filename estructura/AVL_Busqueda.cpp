@@ -236,33 +236,28 @@ vector<unsigned int> AVL_Busqueda::buscarRango(const string& campo, const string
 
     function<void(NodoAVL*)> recorrer = [&](NodoAVL* nodo) {
         if (!nodo) return;
-        if (nodo->clave.campo != campoIndex) {
-            recorrer(nodo->izquierdo);
-            recorrer(nodo->derecho);
-            return;
-        }
-
-        bool cumple = false;
-        if (nodo->clave.tipo == TIPO_ENTERO) {
-            int cmp = nodo->clave.valorEntero;
-            int v = stoi(valor);
-            cumple = (operador == "<" && cmp < v) ||
-                     (operador == ">" && cmp > v) ||
-                     (operador == "<=" && cmp <= v) ||
-                     (operador == ">=" && cmp >= v);
-        } else if (nodo->clave.tipo == TIPO_FLOTANTE) {
-            float cmp = nodo->clave.valorFloat;
-            float v = stof(valor);
-            cumple = (operador == "<" && cmp < v) ||
-                     (operador == ">" && cmp > v) ||
-                     (operador == "<=" && cmp <= v) ||
-                     (operador == ">=" && cmp >= v);
-        }
-
-        if (cumple)
-            res.insert(res.end(), nodo->ids.begin(), nodo->ids.end());
-
         recorrer(nodo->izquierdo);
+        // Solo filtrar por campo y condición aquí, no abortar temprano
+        if (nodo->clave.campo == campoIndex) {
+            bool cumple = false;
+            if (nodo->clave.tipo == TIPO_ENTERO) {
+                int cmp = nodo->clave.valorEntero;
+                int v = stoi(valor);
+                cumple = (operador == "<" && cmp < v) ||
+                         (operador == ">" && cmp > v) ||
+                         (operador == "<=" && cmp <= v) ||
+                         (operador == ">=" && cmp >= v);
+            } else if (nodo->clave.tipo == TIPO_FLOTANTE) {
+                float cmp = nodo->clave.valorFloat;
+                float v = stof(valor);
+                cumple = (operador == "<" && cmp < v) ||
+                         (operador == ">" && cmp > v) ||
+                         (operador == "<=" && cmp <= v) ||
+                         (operador == ">=" && cmp >= v);
+            }
+            if (cumple)
+                res.insert(res.end(), nodo->ids.begin(), nodo->ids.end());
+        }
         recorrer(nodo->derecho);
     };
 
