@@ -23,17 +23,17 @@ private:
     AVL_ID arbol_id;
     vector<unsigned int> combinarVec(vector<unsigned int> final, vector<unsigned int> parcial, Operador op);
 public:
-    Buscador(vector<string>& _campos, vector<string>& _tipoDato, vector<vector<string>>& registros);
+    Buscador(vector<string>& _campos, vector<string>& _tipoDato);
     vector<vector<string>> busquedaCompleta(vector<string>& camposBuscados, vector<string>& valoresBuscados, vector<string>& camposEsperados, Operador ope, string& orden, Orden dirOrden);
     void print();
-
+    bool insertReg(vector<string> &registro);
 };
 
-Buscador::Buscador(vector<string>& _campos, vector<string>& _tipoDato, vector<vector<string>>& registros) {
+Buscador::Buscador(vector<string>& _campos, vector<string>& _tipoDato) {
     arbol_busqueda.setCampos(_campos);
     arbol_busqueda.setTipos(_tipoDato);
     if (arbol_busqueda.campos.size() != arbol_busqueda.tipos.size()) throw invalid_argument("Error en tamaño de vectores :( \n");;
-
+/*
     for (int i = 0; i < registros.size(); ++i) {
         if (!arbol_id.insert(registros[i])) throw invalid_argument("Error en insercion de AVL_ID :( \n");
         for (int j = 1; j < registros[i].size(); ++j) {
@@ -63,6 +63,37 @@ Buscador::Buscador(vector<string>& _campos, vector<string>& _tipoDato, vector<ve
             arbol_busqueda.insertar(clave, id);
         }
     }
+        */
+}
+bool Buscador::insertReg(vector<string> &registro){
+    if (!arbol_id.insert(registro)) return false;
+    for (int j = 1; j < registro.size(); ++j) {
+        if (j >= arbol_busqueda.tipos.size()) return false;
+        Campo_Codificado clave;
+        clave.campo = j;
+        string tipo = arbol_busqueda.tipos[j];
+        string valor = registro[j];
+
+        if (tipo == "int") {
+            clave.tipo = TIPO_ENTERO;
+            clave.valorEntero = stoi(valor);
+        }
+        else if (tipo == "float") {
+            clave.tipo = TIPO_FLOTANTE;
+            clave.valorFloat = stof(valor);
+        }
+        else {
+            clave.tipo = TIPO_STRING;
+            clave.valorString = strdup(valor.c_str());
+            if (!clave.valorString) return false;
+        }
+
+        unsigned long raw_id = stoul(registro[0]);
+        if (raw_id > numeric_limits<unsigned int>::max()) return false;
+        unsigned int id = static_cast<unsigned int>(raw_id);
+        arbol_busqueda.insertar(clave, id);
+    }
+    return true;
 }
 
 vector<unsigned int> Buscador::combinarVec(vector<unsigned int> final, vector<unsigned int> parcial, Operador op) {
@@ -208,6 +239,7 @@ vector<vector<string>> Buscador::busquedaCompleta(vector<string>& camposBuscados
 }
 
 void Buscador::print(){
+    cout << "Arbol ID:" << endl;
     arbol_id.inorder(arbol_id.Root());
     cout << "\nÁrbol de atributos (campo:valor → IDs):\n";
     arbol_busqueda.inorder();
@@ -261,8 +293,12 @@ int main() {
     };
     try {
         //creacion
-        Buscador buscador(campos_nombre, tipoDato, registros);
-        cout << "REGISTROS INSERTADOS EXITOSAMENTE\nArbol ID:" << endl;
+        Buscador buscador(campos_nombre, tipoDato);
+        
+        for(auto& registro : registros){
+            if(!buscador.insertReg(registro)) cerr << "ERROR en la insercion de registross :(\n";
+        }
+        cout << "REGISTROS INSERTADOS EXITOSAMENTE :)\n\n";
         //impresion
         buscador.print();
         //ejemplo de busquedaa
