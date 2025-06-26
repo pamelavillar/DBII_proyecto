@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="script.js"></script>
+
+  <title>Gestor de Base de Datos</title>
+  
+</head>
+<body>
+    <div class="sidebar">
+        <div class="data-import">
+            <button onclick="cargarHeaderDesdeTxt()">Importar data</button>
+            <p id="contador-registros">Cantidad de registros: 0</p>
+        </div>
+        <div class="form-disco">
+            <h3 class="sidebar-title">CONFIGURAR DISCO</h3>
+            <div class="form-section">
+            <div class="form-group">
+                <label for="platos">Platos:</label>
+                <input type="number" id="platos" style="border-radius: 5px">
+            </div>
+            <div class="form-group">
+                <label for="superficies">Superficies:</label>
+                <input type="number" id="superficies">
+            </div>
+            <div class="form-group">
+                <label for="pistas">Pistas:</label>
+                <input type="number" id="pistas">
+            </div>
+            <div class="form-group">
+                <label for="sectores">Sectores:</label>
+                <input type="number" id="sectores">
+            </div>
+            <div class="form-group">
+                <label for="capacidad">Capacidad por sector (bytes):</label>
+                <input type="number" id="capacidad">
+            </div>
+            </div>
+        </div>
+        
+        <button onclick="guardarConfiguracion()">Construir Disco</button>
+    </div>
+      
+
+  <div class="content">
+    <h1>Gestor de Base de Datos</h1>
+
+    <div class="search-area" id="search-area">
+    </div>
+
+    <h2>Consulta Avanzada</h2>
+    <div class="consulta-group">
+        
+
+        <!-- Sección: Operador lógico global -->
+        <div class="consultita-group">
+        <label for="operador-logico">Combinar filtros con:</label>
+        <select id="operador-logico">
+            <option value="AND">AND (todos deben cumplirse)</option>
+            <option value="OR">OR (cualquiera puede cumplirse)</option>
+            <option value="NOT">NOT (excluir resultados que cumplan)</option>
+        </select>
+        </div>
+
+        
+
+        <!-- Sección: Ordenar por atributo -->
+        <div class="consultita-group">
+        <label for="ordenar-por">Ordenar por:</label>
+        <select id="ordenar-por">
+            <option value="">-- Selecciona atributo --</option>
+            <!-- estos se llenarán dinámicamente con JS cuando se lea el txt -->
+        </select>
+
+        <select id="orden-direccion">
+            <option value="asc">Ascendente</option>
+            <option value="desc">Descendente</option>
+        </select>
+        </div>
+
+        <!-- Sección: Selección de columnas -->
+        <div class="consultita-group">
+        <label>Columnas a mostrar:</label>
+        <div id="columnas-checkboxes", class="columnas-checkboxes">
+            <!-- se generan dinámicamente según los atributos -->
+        </div>
+        </div>
+    </div>
+    
+
+
+    <div class="button-buscar">
+        <button onclick="buscarRegistros()", style="border-radius: 10px;">Buscar</button>
+    </div>
+
+
+
+
+    <div class="resultados-section">
+        <h3>RESULTADOS</h3>
+        <table id="resultados">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+  </div>
+
+</body>
+</html>

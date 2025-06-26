@@ -13,7 +13,7 @@
 using namespace std;
 
 // Primero declaramos DataValue
-using DataValue = std::variant<int, std::string, float>;
+using DataValue = std::variant<int, std::string, float, bool, char>;
 
 // Clase Dato
 class Dato {
@@ -40,6 +40,10 @@ int compareDataValue(const DataValue& a, const DataValue& b) {
         float diff = get<float>(a) - get<float>(b);
         return (diff > 0) - (diff < 0);
     }
+    else if (holds_alternative<bool>(a))
+        return get<bool>(a) - get<bool>(b); // false < true
+    else if (holds_alternative<char>(a))
+        return get<char>(a) - get<char>(b);
     return 0;
 }
     // Estructura para almacenar información de un campo
